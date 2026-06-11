@@ -83,6 +83,21 @@ textarea:focus,select:focus,input[type=text]:focus{outline:none;border-color:#1a
 .upload-ok{background:#E1F5EE;border:1px solid #5DCAA5;border-radius:8px;padding:.625rem .875rem;display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#085041;line-height:1.6;margin-bottom:.875rem}
 .ai-banner{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:.875rem 1rem;margin-bottom:1.5rem;font-size:13px;color:#78350f;line-height:1.6}
 .ai-banner strong{font-weight:600}
+
+/* Modal styles */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#fff;border-radius:16px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid #e5e5e2;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h2{font-size:16px;font-weight:600}
+.modal-close{background:none;border:none;cursor:pointer;color:#6b6b6b;font-size:20px;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:#f7f7f5;color:#1a1a1a}
+.modal-body{padding:1.25rem 1.5rem;overflow-y:auto;flex:1}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid #e5e5e2;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.modal-instructions{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:.875rem 1rem;font-size:13px;color:#166534;line-height:1.6;margin-bottom:1rem}
+.modal-instructions strong{font-weight:600}
+.prompt-preview{background:#f7f7f5;border:1px solid #e5e5e2;border-radius:8px;padding:1rem;font-family:monospace;font-size:12px;line-height:1.6;color:#1a1a1a;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
+.copy-success{color:#085041;font-size:13px;font-weight:500;display:none;align-items:center;gap:5px}
+
 @media(max-width:600px){.row{flex-direction:column}.pending-fields{flex-direction:column}.ws{padding:1.25rem 1rem}}
 </style>
 </head>
@@ -94,7 +109,7 @@ textarea:focus,select:focus,input[type=text]:focus{outline:none;border-color:#1a
 </div>
 
 <div class="ai-banner">
-  <strong>How this works:</strong> Fill in your job descriptions, survey data, and any new roles across the first three tabs. When you're ready, go to Generate and Claude will respond directly in this chat with your outputs.
+  <strong>How this works:</strong> Fill in your job descriptions, survey data, and any new roles across the first three tabs. When you're ready, go to Generate — it will copy the prompt to your clipboard so you can paste it into Claude's chat.
 </div>
 
 <div class="tabs">
@@ -274,7 +289,7 @@ textarea:focus,select:focus,input[type=text]:focus{outline:none;border-color:#1a
 <div id="tab-generate" class="panel">
   <div class="card">
     <div class="card-title">Generate</div>
-    <div class="card-desc">Select what to produce. All uploaded job descriptions, survey data, and new roles will be used. Claude will respond in the chat below.</div>
+    <div class="card-desc">Select what to produce. All uploaded job descriptions, survey data, and new roles will be used. Click Generate to copy the prompt — then paste it into Claude's chat.</div>
     <label>Team name</label>
     <textarea id="map-dept" rows="1" placeholder="e.g. Programs - Homeownership"></textarea>
     <div style="margin-top:1.25rem;margin-bottom:.5rem;font-size:11px;font-weight:600;color:#6b6b6b;text-transform:uppercase;letter-spacing:.06em">Select outputs</div>
@@ -300,9 +315,30 @@ textarea:focus,select:focus,input[type=text]:focus{outline:none;border-color:#1a
       <span class="stat"><strong id="gen-sv-ct">0</strong> survey responses</span>
       <span class="stat"><strong id="gen-nr-ct">0</strong> new roles</span>
     </div>
-    <button class="btn btn-primary" onclick="sendGenerate()"><i class="ti ti-sparkles"></i>Generate ↗</button>
+    <button class="btn btn-primary" onclick="sendGenerate()"><i class="ti ti-clipboard"></i>Copy prompt to clipboard ↗</button>
   </div>
 </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="prompt-modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Your prompt is ready</h2>
+      <button class="modal-close" onclick="document.getElementById('prompt-modal').style.display='none'">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-instructions">
+        <strong>Next step:</strong> Click "Copy to clipboard" below, then switch to your Claude chat tab and paste it in (Ctrl+V / ⌘+V).
+      </div>
+      <div class="prompt-preview" id="prompt-preview"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="copyPrompt()"><i class="ti ti-clipboard"></i>Copy to clipboard</button>
+      <button class="btn" onclick="document.getElementById('prompt-modal').style.display='none'">Close</button>
+      <span class="copy-success" id="copy-success"><i class="ti ti-check"></i> Copied!</span>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -339,6 +375,7 @@ const SQS=[
 const TCOLORS={'Programs - Adult Education':'b-purple','Programs - Community Services':'b-coral','Programs - Homeownership':'b-teal','Programs - Organizing & Advocacy':'b-amber','Lottery':'b-blue','FAC Solar':'b-green','Fundraising':'b-blue','Communications':'b-teal','Data & Evaluation':'b-green'};
 
 let jdRoles=[],pendingJDs=[],survey=[],newRoles=[],csvCols=[],csvRows=[],svMode='upload';
+let currentPrompt='';
 
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -594,10 +631,10 @@ function fmtJDs(){return jdRoles.map((r,i)=>`ROLE ${i+1}: ${r.title} (Team: ${r.
 function fmtNewRoles(){return newRoles.map((r,i)=>`NEW ROLE ${i+1}: ${r.title} (Team: ${r.dept||'N/A'})\nGap/purpose: ${r.purpose}\nRole below: ${r.below||'N/A'} | Role above: ${r.above||'N/A'}`).join('\n\n');}
 function fmtSurvey(){return survey.map((r,i)=>`RESPONDENT ${i+1}: ${r.title||'?'} (${r.unit||'?'})\n- Last job: ${r.q1||'N/A'} | Education: ${r.q12||'N/A'} | Certs: ${r.q13||'N/A'}\n- Technical: ${r.q2||'N/A'} | Knowledge: ${r.q14||'N/A'}\n- Behavioral: ${r.q3||'N/A'} | Partners: ${r.q4||'N/A'}\n- Duty 1: ${r.q5||'N/A'} [${r.inv1||'N/A'}]\n- Duty 2: ${r.q7||'N/A'} [${r.inv2||'N/A'}]\n- Duty 3: ${r.q9||'N/A'} [${r.inv3||'N/A'}]\n- Hidden: ${r.q11||'N/A'}`).join('\n\n');}
 
-function sendGenerate(){
+function buildPrompt(){
   const wStd=document.getElementById('out-std').checked,wJDs=document.getElementById('out-jds').checked,wCPF=document.getElementById('out-cpf').checked,wOrg=document.getElementById('out-org').checked;
-  if(!wStd&&!wJDs&&!wCPF&&!wOrg){alert('Select at least one output.');return;}
-  if(!jdRoles.length&&!newRoles.length){alert('Upload at least one job description or add a new role first.');return;}
+  if(!wStd&&!wJDs&&!wCPF&&!wOrg){alert('Select at least one output.');return null;}
+  if(!jdRoles.length&&!newRoles.length){alert('Upload at least one job description or add a new role first.');return null;}
   const dept=gv('map-dept')||'this team';
   const jdSection=jdRoles.length?'\n\nEXISTING JOB DESCRIPTIONS:\n'+fmtJDs():'';
   const nrSection=newRoles.length?'\n\nNEW ROLES TO DRAFT:\n'+fmtNewRoles():'';
@@ -609,8 +646,62 @@ function sendGenerate(){
   if(wJDs)parts.push({label:'ALL JOB DESCRIPTIONS',p:base+'\n\nTASK: Write complete standardized JDs for ALL roles - existing and any new roles. For each: title, career stream, reporting structure, position summary (2-3 sentences), FLSA status, responsibilities (6-8 bullets), core competencies (5 bullets), qualifications. Organize entry to senior. For new roles, note how each fits the progression framework and who could move into it.'});
   if(wCPF)parts.push({label:'CAREER PROGRESSION FRAMEWORK',p:base+'\n\nTASK: Create a career progression framework modeled on the FAC Organizing & Advocacy Career Progression Map.\n\nFor each role populate ALL dimensions:\n- Title | Status/Hours | Previous Roles/Career Path (from Q1) | Program Impact\n- Technical & Content Expertise (from Q2+Q14) | Behavioral/Soft Skills (from Q3)\n- Education & Experience (from Q12+Q13) | Key Responsibilities (from Q5/Q7/Q9)\n- Level of Involvement: Assists/Supports > Performs Directly > Coordinates > Oversees > Accountable for All (from Q6/Q8/Q10)\n- Reports To\n\nGroup into parallel tracks if the team has them. Flag aspirational/new roles. End with 3-5 recommendations.'});
   if(wOrg)parts.push({label:'NEW TEAM ORG CHART',p:base+'\n\nTASK: Create a text-based org chart showing the full reporting structure. Use indentation and hierarchy indicators. Label new/aspirational roles [NEW]. Include a brief legend.'});
-  if(parts.length===1){sendPrompt(parts[0].p);}
-  else{sendPrompt('Please generate each section separately with a clear heading:\n\n'+parts.map(x=>`=== ${x.label} ===\n\n${x.p}`).join('\n\n---\n\n'));}
+  if(parts.length===1)return parts[0].p;
+  return'Please generate each section separately with a clear heading:\n\n'+parts.map(x=>`=== ${x.label} ===\n\n${x.p}`).join('\n\n---\n\n');
+}
+
+function sendGenerate(){
+  const prompt=buildPrompt();
+  if(!prompt)return;
+  currentPrompt=prompt;
+  // Try clipboard first, fall back to modal
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(prompt).then(()=>{
+      showModal(prompt,true);
+    }).catch(()=>{
+      showModal(prompt,false);
+    });
+  } else {
+    showModal(prompt,false);
+  }
+}
+
+function showModal(prompt,alreadyCopied){
+  document.getElementById('prompt-preview').textContent=prompt.substring(0,2000)+(prompt.length>2000?'\n\n… (truncated for preview, full prompt copied)':'');
+  document.getElementById('prompt-modal').style.display='flex';
+  const successEl=document.getElementById('copy-success');
+  if(alreadyCopied){
+    successEl.style.display='inline-flex';
+    setTimeout(()=>{successEl.style.display='none';},3000);
+  } else {
+    successEl.style.display='none';
+  }
+}
+
+function copyPrompt(){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(currentPrompt).then(()=>{
+      const el=document.getElementById('copy-success');
+      el.style.display='inline-flex';
+      setTimeout(()=>{el.style.display='none';},3000);
+    });
+  } else {
+    // Legacy fallback
+    const ta=document.createElement('textarea');
+    ta.value=currentPrompt;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const el=document.getElementById('copy-success');
+    el.style.display='inline-flex';
+    setTimeout(()=>{el.style.display='none';},3000);
+  }
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('prompt-modal'))
+    document.getElementById('prompt-modal').style.display='none';
 }
 </script>
 </body>
