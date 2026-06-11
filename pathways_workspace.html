@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pathways Project Workspace — FAC & NHN</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f7f7f5;
+    --color-border: #e5e5e2;
+    --color-border-secondary: #d4d4d0;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #6b6b6b;
+    --color-accent: #1a1a1a;
+    --color-accent-fg: #ffffff;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); font-size: 14px; line-height: 1.5; }
+  .app { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .app-header { margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-border); }
+  .app-header h1 { font-size: 20px; font-weight: 600; color: var(--color-text); margin-bottom: 4px; }
+  .app-header p { font-size: 13px; color: var(--color-text-secondary); }
+  .tabs { display: flex; gap: 2px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); flex-wrap: wrap; }
+  .tab { padding: 9px 16px; font-size: 13px; font-family: var(--font); cursor: pointer; border: none; background: none; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .tab:hover { color: var(--color-text); }
+  .tab.active { color: var(--color-text); border-bottom-color: var(--color-text); font-weight: 500; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--color-text); margin-bottom: 5px; }
+  .card-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.25rem; line-height: 1.6; }
+  label { font-size: 13px; color: var(--color-text-secondary); display: block; margin-bottom: 5px; margin-top: 1rem; }
+  label:first-of-type { margin-top: 0; }
+  input[type="text"], textarea, select {
+    width: 100%; font-family: var(--font); font-size: 13px;
+    padding: 8px 11px; border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); background: var(--color-bg);
+    color: var(--color-text); transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: var(--color-accent); }
+  textarea { resize: vertical; line-height: 1.6; }
+  .row { display: flex; gap: 12px; }
+  .row .col { flex: 1; min-width: 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; font-size: 13px; font-family: var(--font);
+    border: 1px solid var(--color-border-secondary); border-radius: var(--radius-md);
+    cursor: pointer; background: transparent; color: var(--color-text);
+    transition: background 0.12s; font-weight: 500;
+  }
+  .btn:hover { background: var(--color-bg-secondary); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent); }
+  .btn-primary:hover { opacity: 0.87; background: var(--color-accent); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; font-size: 11px; border-radius: 20px; font-weight: 500; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-teal { background: #d1fae5; color: #065f46; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-purple { background: #ede9fe; color: #4c1d95; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-coral { background: #fee2e2; color: #991b1b; }
+  .divider { height: 1px; background: var(--color-border); margin: 1.25rem 0; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .06em; margin: 1.25rem 0 .75rem; padding-bottom: 6px; border-bottom: 1px solid var(--color-border); }
+  /* Drop zone */
+  .drop-zone {
+    border: 1.5px dashed var(--color-border-secondary); border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem; text-align: center; cursor: pointer;
+    transition: background 0.15s; margin-bottom: 1rem;
+  }
+  .drop-zone:hover, .drop-zone.drag-over { background: var(--color-bg-secondary); }
+  .drop-zone .dz-icon { font-size: 32px; color: var(--color-text-secondary); margin-bottom: 10px; }
+  .drop-zone .dz-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .drop-zone .dz-sub { font-size: 12px; color: var(--color-text-secondary); }
+  /* Upload success */
+  .upload-success {
+    background: #f0fdf4; border: 1px solid #86efac;
+    border-radius: var(--radius-md); padding: .875rem 1rem;
+    display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1rem;
+  }
+  .upload-success .us-title { font-size: 13px; color: #166534; font-weight: 500; }
+  .upload-success .us-sub { font-size: 12px; color: #16a34a; margin-top: 3px; line-height: 1.6; }
+  /* Mapping */
+  .mapping-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .mapping-row .q-lbl { min-width: 210px; font-size: 12px; color: var(--color-text-secondary); }
+  .mapping-row select { flex: 1; }
+  /* No survey notice */
+  .notice { background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem; font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+  /* Role chip */
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--color-border); border-radius: 20px; font-size: 12px; margin: 3px; background: var(--color-bg-secondary); }
+  .chip-remove { cursor: pointer; color: var(--color-text-secondary); font-size: 15px; line-height: 1; margin-left: 2px; }
+  .chip-remove:hover { color: var(--color-text); }
+  .chips-area { border: 1px dashed var(--color-border-secondary); border-radius: var(--radius-md); padding: 10px; min-height: 54px; margin-top: 8px; }
+  /* Parsed response card */
+  .resp-card { background: var(--color-bg-secondary); border-radius: var(--radius-md); padding: .75rem 1rem; margin-bottom: 6px; }
+  .resp-card-title { font-weight: 500; font-size: 13px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .resp-card-duties { display: flex; flex-wrap: wrap; gap: 4px; }
+  .duty-chip { display: inline-block; padding: 2px 7px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 11px; color: var(--color-text-secondary); font-family: var(--font-mono); }
+  /* Involvement checkboxes */
+  .inv-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .inv-opt { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; }
+  .inv-opt input { margin: 0; cursor: pointer; }
+  /* Check option (output selector) */
+  .check-opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px; border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); margin-bottom: 8px; cursor: pointer;
+    transition: background 0.12s;
+  }
+  .check-opt:hover { background: var(--color-bg-secondary); }
+  .check-opt input { margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+  .check-opt .co-label { font-size: 13px; font-weight: 500; color: var(--color-text); }
+  .check-opt .co-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 3px; line-height: 1.5; }
+  /* Mode buttons */
+  .mode-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .mode-btn { padding: 7px 14px; font-size: 13px; font-family: var(--font); border: 1px solid var(--color-border-secondary); border-radius: var(--radius-md); cursor: pointer; background: transparent; color: var(--color-text-secondary); transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .mode-btn:hover { color: var(--color-text); background: var(--color-bg-secondary); }
+  .mode-btn.active { color: var(--color-text); border-color: var(--color-text); font-weight: 500; background: var(--color-bg); }
+  /* Output section */
+  .out-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); }
+  .out-section-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-secondary); margin-bottom: .5rem; }
+  .output-box {
+    background: var(--color-bg-secondary); border-radius: var(--radius-md);
+    padding: 1rem 1.25rem; font-size: 13px; line-height: 1.8;
+    color: var(--color-text); white-space: pre-wrap;
+    max-height: 500px; overflow-y: auto; margin-top: .75rem;
+    border: 1px solid var(--color-border);
+  }
+  /* Loading */
+  .loading { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); padding: 1rem 0; }
+  .dot { display: inline-block; animation: blink 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: .2s; }
+  .dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% { opacity: .15; } 40% { opacity: 1; } }
+  /* Stats row */
+  .stats-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+  .stat { font-size: 13px; color: var(--color-text-secondary); }
+  .stat strong { color: var(--color-text); font-weight: 500; }
+  /* Responsive */
+  @media (max-width: 600px) {
+    .app { padding: 1.25rem 1rem; }
+    .row { flex-direction: column; gap: 0; }
+    .mapping-row { flex-direction: column; align-items: flex-start; }
+    .mapping-row .q-lbl { min-width: unset; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="app-header">
+    <h1>Pathways Project Workspace</h1>
+    <p>FAC & NHN — standardize roles, draft new positions, and build career progression frameworks</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('survey', this)"><i class="ti ti-clipboard-list"></i> Survey data</button>
+    <button class="tab" onclick="switchTab('standardize', this)"><i class="ti ti-layout-list"></i> Standardize roles</button>
+    <button class="tab" onclick="switchTab('newrole', this)"><i class="ti ti-plus"></i> Draft new role</button>
+    <button class="tab" onclick="switchTab('generate', this)"><i class="ti ti-sparkles"></i> Generate</button>
+  </div>
+
+  <!-- ── TAB 1: SURVEY ─────────────────────────────────────────── -->
+  <div id="tab-survey" class="panel active">
+    <div class="card">
+      <div class="card-title">Survey data</div>
+      <div class="card-desc">Upload a CSV export of your survey responses, enter them manually, or skip if your team isn't doing a survey.</div>
+
+      <div class="mode-btns">
+        <button class="mode-btn active" id="mode-upload-btn" onclick="setSurveyMode('upload')"><i class="ti ti-upload"></i> Upload CSV</button>
+        <button class="mode-btn" id="mode-manual-btn" onclick="setSurveyMode('manual')"><i class="ti ti-edit"></i> Enter manually</button>
+        <button class="mode-btn" id="mode-none-btn" onclick="setSurveyMode('none')"><i class="ti ti-x"></i> No survey for this team</button>
+      </div>
+
+      <!-- Upload -->
+      <div id="mode-upload">
+        <div class="drop-zone" id="drop-zone"
+          onclick="document.getElementById('csv-file').click()"
+          ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)"
+          ondrop="handleDrop(event)">
+          <div class="dz-icon"><i class="ti ti-file-spreadsheet"></i></div>
+          <div class="dz-title">Drop your CSV here, or click to browse</div>
+          <div class="dz-sub">Google Forms · Excel CSV · Typeform · any spreadsheet saved as .csv</div>
+        </div>
+        <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleFileSelect(event)">
+        <div id="upload-success" style="display:none"></div>
+        <div id="mapping-section" style="display:none">
+          <div class="section-label">Map your columns to survey questions</div>
+          <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:.75rem">Match each column to the right question — leave blank to skip.</p>
+          <div id="mapping-rows"></div>
+          <div style="margin-top:1rem">
+            <button class="btn btn-primary" onclick="applyMapping()"><i class="ti ti-check"></i> Load responses</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual -->
+      <div id="mode-manual" style="display:none">
+        <div class="row">
+          <div class="col">
+            <label>Programs unit</label>
+            <select id="sv-unit">
+              <option value="">Select…</option>
+              <option>Programs - Adult Education</option>
+              <option>Programs - Community Services</option>
+              <option>Programs - Homeownership</option>
+              <option>Programs - Organizing & Advocacy</option>
+              <option>Lottery</option><option>FAC Solar</option>
+              <option>Executive</option><option>Fundraising</option>
+              <option>Communications</option><option>Data & Evaluation</option>
+              <option>Housing Development</option>
+              <option>Asset & Property Management</option>
+              <option>Finance</option><option>HR & Admin</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Staff title</label>
+            <input type="text" id="sv-title" placeholder="Their current title">
+          </div>
+        </div>
+
+        <div class="section-label">Background</div>
+        <label>Last job before joining FAC/NHN</label>
+        <textarea id="sv-q1" rows="2" placeholder="e.g. Case manager at housing nonprofit, tenant organizer…"></textarea>
+        <label>Highest level of education</label>
+        <select id="sv-q12">
+          <option value="">Select…</option>
+          <option>Less than high school diploma</option>
+          <option>High school diploma or GED</option>
+          <option>Some college, no degree</option>
+          <option>Associate's degree</option>
+          <option>Bachelor's degree</option>
+          <option>Some graduate school</option>
+          <option>Master's degree</option>
+          <option>Doctoral or professional degree</option>
+        </select>
+        <label>Certifications, licenses, or required training</label>
+        <textarea id="sv-q13" rows="2" placeholder="e.g. HUD counseling certification, NMLS license…"></textarea>
+
+        <div class="section-label">Skills & knowledge</div>
+        <label>Technical skills needed</label>
+        <textarea id="sv-q2" rows="2" placeholder="e.g. Salesforce, Excel, HUD counseling tools…"></textarea>
+        <label>Interpersonal or behavioral skills needed</label>
+        <textarea id="sv-q3" rows="2" placeholder="e.g. Active listening, facilitation, cultural humility…"></textarea>
+        <label>Knowledge needed to do role well</label>
+        <textarea id="sv-q14" rows="2" placeholder="e.g. NYC housing law, tenant rights, HDFC rules…"></textarea>
+        <label>External partners regularly interfaced with</label>
+        <textarea id="sv-q4" rows="2" placeholder="e.g. HPD, HUD, legal services, banks, community boards…"></textarea>
+
+        <div class="section-label">Top 3 duties</div>
+        <label>#1 most important duty & how it contributes to outcomes</label>
+        <textarea id="sv-q5" rows="2" placeholder="e.g. One-on-one housing counseling — helps clients stabilize housing…"></textarea>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;margin-bottom:4px">Level of involvement — duty #1</p>
+        <div class="inv-grid" id="inv1">
+          <label class="inv-opt"><input type="checkbox" value="Leads/Directs"> Leads/Directs</label>
+          <label class="inv-opt"><input type="checkbox" value="Performs Directly"> Performs Directly</label>
+          <label class="inv-opt"><input type="checkbox" value="Oversees"> Oversees</label>
+          <label class="inv-opt"><input type="checkbox" value="Coordinates"> Coordinates</label>
+          <label class="inv-opt"><input type="checkbox" value="Supports/Assists"> Supports/Assists</label>
+          <label class="inv-opt"><input type="checkbox" value="Accountable for outcome"> Accountable for outcome</label>
+        </div>
+
+        <label>#2 most important duty & how it contributes</label>
+        <textarea id="sv-q7" rows="2" placeholder="e.g. Homebuyer workshops — builds financial literacy and readiness…"></textarea>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;margin-bottom:4px">Level of involvement — duty #2</p>
+        <div class="inv-grid" id="inv2">
+          <label class="inv-opt"><input type="checkbox" value="Leads/Directs"> Leads/Directs</label>
+          <label class="inv-opt"><input type="checkbox" value="Performs Directly"> Performs Directly</label>
+          <label class="inv-opt"><input type="checkbox" value="Oversees"> Oversees</label>
+          <label class="inv-opt"><input type="checkbox" value="Coordinates"> Coordinates</label>
+          <label class="inv-opt"><input type="checkbox" value="Supports/Assists"> Supports/Assists</label>
+          <label class="inv-opt"><input type="checkbox" value="Accountable for outcome"> Accountable for outcome</label>
+        </div>
+
+        <label>#3 most important duty & how it contributes</label>
+        <textarea id="sv-q9" rows="2" placeholder="e.g. Salesforce data entry — ensures compliance and funder reporting…"></textarea>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;margin-bottom:4px">Level of involvement — duty #3</p>
+        <div class="inv-grid" id="inv3">
+          <label class="inv-opt"><input type="checkbox" value="Leads/Directs"> Leads/Directs</label>
+          <label class="inv-opt"><input type="checkbox" value="Performs Directly"> Performs Directly</label>
+          <label class="inv-opt"><input type="checkbox" value="Oversees"> Oversees</label>
+          <label class="inv-opt"><input type="checkbox" value="Coordinates"> Coordinates</label>
+          <label class="inv-opt"><input type="checkbox" value="Supports/Assists"> Supports/Assists</label>
+          <label class="inv-opt"><input type="checkbox" value="Accountable for outcome"> Accountable for outcome</label>
+        </div>
+
+        <div class="section-label">Role context</div>
+        <label>Important aspects not obvious from the job description</label>
+        <textarea id="sv-q11" rows="2" placeholder="e.g. A lot of the work is relationship-building that doesn't show up in metrics…"></textarea>
+
+        <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center">
+          <button class="btn btn-sm" onclick="addManualResponse()"><i class="ti ti-plus"></i> Add to batch</button>
+          <span id="survey-count" style="font-size:12px;color:var(--color-text-secondary)">0 responses loaded</span>
+        </div>
+      </div>
+
+      <!-- No survey -->
+      <div id="mode-none" style="display:none">
+        <div class="notice">
+          <i class="ti ti-info-circle" style="margin-right:6px"></i>
+          No survey data will be included. Outputs will be generated from job descriptions and the org framework only. You can still add roles in the Standardize and Draft new role tabs.
+        </div>
+      </div>
+    </div>
+
+    <div id="loaded-responses" style="display:none">
+      <div class="section-label" style="margin-top:0">Loaded responses</div>
+      <div id="responses-list"></div>
+      <div style="margin-top:.75rem;display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="clearResponses()"><i class="ti ti-trash"></i> Clear all</button>
+        <button class="btn btn-sm btn-primary" onclick="switchTab('generate', document.querySelectorAll('.tab')[3])">Go to Generate ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 2: STANDARDIZE ─────────────────────────────────────── -->
+  <div id="tab-standardize" class="panel">
+    <div class="card">
+      <div class="card-title">Add your team's current roles</div>
+      <div class="card-desc">Paste each existing job description or set of responsibilities. Add them one at a time to batch-standardize the whole team.</div>
+      <div class="row">
+        <div class="col">
+          <label>Team</label>
+          <select id="std-dept">
+            <option value="">Select…</option>
+            <optgroup label="Programs">
+              <option>Programs - Adult Education</option>
+              <option>Programs - Community Services</option>
+              <option>Programs - Homeownership</option>
+              <option>Programs - Organizing & Advocacy</option>
+            </optgroup>
+            <optgroup label="Other teams">
+              <option>Lottery</option><option>FAC Solar</option>
+              <option>Executive</option><option>Fundraising</option>
+              <option>Communications</option><option>Data & Evaluation</option>
+              <option>Housing Development</option>
+              <option>Asset & Property Management</option>
+              <option>Finance</option><option>HR & Admin</option>
+              <option>Other</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="col">
+          <label>Career stream</label>
+          <select id="std-stream">
+            <option value="">Select…</option>
+            <option>Executive</option><option>Management</option>
+            <option>Supervisory</option>
+            <option>Project/Program Manager</option>
+            <option>Specialist</option>
+            <option>Organizational/Property Support</option>
+          </select>
+        </div>
+      </div>
+      <label>Role title</label>
+      <input type="text" id="std-title" placeholder="e.g. Senior Housing Counselor">
+      <label>Job description or key responsibilities</label>
+      <textarea id="std-jd" rows="5" placeholder="Paste the full job description, or list responsibilities and qualifications…"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.875rem">
+        <button class="btn btn-sm" onclick="addRole()"><i class="ti ti-plus"></i> Add to batch</button>
+        <span id="role-count" style="font-size:12px;color:var(--color-text-secondary)">0 roles added</span>
+      </div>
+      <div class="chips-area" id="roles-area">
+        <span style="font-size:12px;color:var(--color-text-secondary)">Added roles appear here…</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Standardization options</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:.25rem;margin-bottom:1.25rem">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--color-text);margin-top:0">
+          <input type="checkbox" id="opt-align" checked> Align to FAC/NHN's Job Architecture
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--color-text);margin-top:0">
+          <input type="checkbox" id="opt-resp" checked> Standardize responsibilities
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--color-text);margin-top:0">
+          <input type="checkbox" id="opt-qual" checked> Standardize qualifications
+        </label>
+      </div>
+      <button class="btn btn-primary" onclick="runStandardize()"><i class="ti ti-wand"></i> Standardize roles</button>
+    </div>
+
+    <div id="std-output" style="display:none">
+      <div class="output-box" id="std-result"></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="copyOut('std-result')"><i class="ti ti-copy"></i> Copy</button>
+        <button class="btn btn-sm" onclick="sendToChat('Take the standardized roles and draft any missing rungs in the career ladder.')">Draft missing roles ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 3: DRAFT NEW ROLE ──────────────────────────────────── -->
+  <div id="tab-newrole" class="panel">
+    <div class="card">
+      <div class="card-title">Draft a new role</div>
+      <div class="card-desc">Describe the gap in your team's progression framework. If there are roles that existing staff could be promoted into and/or new staff could be hired into, include them below. Claude will write a full job description anchored to the Job Architecture and responsibilities/competencies for the roles above/below it.</div>
+      <div class="row">
+        <div class="col">
+          <label>Team</label>
+          <select id="new-dept">
+            <option value="">Select…</option>
+            <optgroup label="Programs">
+              <option>Programs - Adult Education</option>
+              <option>Programs - Community Services</option>
+              <option>Programs - Homeownership</option>
+              <option>Programs - Organizing & Advocacy</option>
+            </optgroup>
+            <optgroup label="Other teams">
+              <option>Lottery</option><option>FAC Solar</option>
+              <option>Executive</option><option>Fundraising</option>
+              <option>Communications</option><option>Data & Evaluation</option>
+              <option>Housing Development</option>
+              <option>Asset & Property Management</option>
+              <option>Finance</option><option>HR & Admin</option>
+              <option>Other</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="col">
+          <label>Career stream</label>
+          <select id="new-stream">
+            <option value="">Select…</option>
+            <option>Executive</option><option>Management</option>
+            <option>Supervisory</option>
+            <option>Project/Program Manager</option>
+            <option>Specialist</option>
+            <option>Organizational/Property Support</option>
+          </select>
+        </div>
+      </div>
+      <label>Proposed title or description of the role</label>
+      <input type="text" id="new-title" placeholder="e.g. Lead Housing Counselor — or 'someone between counselor and coordinator'">
+      <label>What gap does this fill? What would it accomplish?</label>
+      <textarea id="new-purpose" rows="4" placeholder="e.g. We need someone to mentor junior counselors and handle complex multi-issue cases, sitting between Counselor and Coordinator. Existing Counselors could be promoted into this; we could also hire externally…"></textarea>
+      <div class="row" style="margin-top:.875rem">
+        <div class="col">
+          <label>Role below it</label>
+          <input type="text" id="role-below" placeholder="e.g. Housing Counselor">
+        </div>
+        <div class="col">
+          <label>Role above it</label>
+          <input type="text" id="role-above" placeholder="e.g. Homeownership Coordinator">
+        </div>
+      </div>
+      <div style="margin-top:.875rem">
+        <button class="btn btn-primary" onclick="runNewRole()"><i class="ti ti-file-text"></i> Write job description</button>
+      </div>
+    </div>
+
+    <div id="newrole-output" style="display:none">
+      <div class="output-box" id="newrole-result"></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="copyOut('newrole-result')"><i class="ti ti-copy"></i> Copy</button>
+        <button class="btn btn-sm" onclick="sendToChat('Refine this role description. Make qualifications more specific to a nonprofit housing context in NYC.')">Refine ↗</button>
+        <button class="btn btn-sm" onclick="sendToChat('Write a part-time or grant-funded pilot version of this role.')">PT / pilot version ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 4: GENERATE ────────────────────────────────────────── -->
+  <div id="tab-generate" class="panel">
+    <div class="card">
+      <div class="card-title">Generate</div>
+      <div class="card-desc">Select what you'd like to produce for this team. Uses all loaded survey responses and job descriptions.</div>
+
+      <label>Team name</label>
+      <input type="text" id="map-dept" placeholder="e.g. Programs - Homeownership">
+
+      <div style="margin-top:1.25rem;margin-bottom:.5rem;font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em">Select outputs</div>
+
+      <div class="check-opt" onclick="toggleCheck('out-jds')">
+        <input type="checkbox" id="out-jds" onclick="event.stopPropagation()">
+        <div>
+          <div class="co-label">All job descriptions (new and existing roles)</div>
+          <div class="co-sub">A complete set of standardized job descriptions for every role in the team's progression framework, including any new roles drafted above.</div>
+        </div>
+      </div>
+
+      <div class="check-opt" onclick="toggleCheck('out-cpf')">
+        <input type="checkbox" id="out-cpf" onclick="event.stopPropagation()">
+        <div>
+          <div class="co-label">Career progression framework</div>
+          <div class="co-sub">A structured map showing each role across key dimensions: career path, technical expertise, behavioral skills, key responsibilities, level of involvement, education & experience, and reports to — modeled on the O&A example.</div>
+        </div>
+      </div>
+
+      <div class="check-opt" onclick="toggleCheck('out-org')">
+        <input type="checkbox" id="out-org" onclick="event.stopPropagation()">
+        <div>
+          <div class="co-label">New team org chart</div>
+          <div class="co-sub">A text-based org chart showing the full reporting structure across all roles, including any new or aspirational positions.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="stats-row">
+        <span class="stat"><strong id="map-survey-count">0</strong> survey responses ready</span>
+        <span class="stat"><strong id="map-role-count">0</strong> roles ready</span>
+      </div>
+      <button class="btn btn-primary" onclick="runGenerate()"><i class="ti ti-sparkles"></i> Generate</button>
+    </div>
+
+    <div id="gen-output" style="display:none">
+      <div id="gen-jds-section" style="display:none">
+        <div class="out-section">
+          <div class="out-section-label">All job descriptions</div>
+          <div class="output-box" id="gen-jds-result"></div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="copyOut('gen-jds-result')"><i class="ti ti-copy"></i> Copy</button>
+            <button class="btn btn-sm" onclick="sendToChat('Refine these job descriptions. Make the language more specific to a nonprofit housing context in NYC.')">Refine ↗</button>
+          </div>
+        </div>
+      </div>
+      <div id="gen-cpf-section" style="display:none">
+        <div class="out-section">
+          <div class="out-section-label">Career progression framework</div>
+          <div class="output-box" id="gen-cpf-result"></div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="copyOut('gen-cpf-result')"><i class="ti ti-copy"></i> Copy</button>
+            <button class="btn btn-sm" onclick="sendToChat('Convert this career progression framework into a table I can paste into Excel — one column per role, one row per dimension.')">Export to Excel ↗</button>
+          </div>
+        </div>
+      </div>
+      <div id="gen-org-section" style="display:none">
+        <div class="out-section">
+          <div class="out-section-label">New team org chart</div>
+          <div class="output-box" id="gen-org-result"></div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="copyOut('gen-org-result')"><i class="ti ti-copy"></i> Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+/* ── State ─────────────────────────────────────────────────────── */
+let roles = [], surveyResponses = [], csvColumns = [], csvRows = [], surveyMode = 'upload';
+
+const ORG_FRAMEWORK = `FAC, BWI and NHN Job Architecture — Career Streams:
+Executive: Final authority on mission/strategy/budget. Accountable to Board. 15+ yrs (Master's) or 20+ (Bachelor's).
+Management: Shapes functional strategy, org-wide influence. Manages Senior Directors/Directors. 10–12 yrs (Master's) or 15–20 (Bachelor's).
+Supervisory: Moderate-to-high authority within unit. Manages Directors/Senior Managers/Managers. Bachelor's + 5–7 yrs.
+Project/Program Manager: Moderate authority. Manages staff and interns. Bachelor's + 2–5 yrs.
+Specialist: Limited influence through expertise. May mentor peers. HS diploma + 0–3 yrs or Associate's.
+Organizational/Property Support: Minimal authority. Administrative/logistical support. HS diploma + 0–3 yrs.`;
+
+const SURVEY_QUESTIONS = [
+  {key:'title',  label:'Staff title'},
+  {key:'unit',   label:'Programs unit / team'},
+  {key:'q1',    label:'Last job before joining FAC/NHN'},
+  {key:'q2',    label:'Technical skills needed'},
+  {key:'q3',    label:'Interpersonal / behavioral skills needed'},
+  {key:'q4',    label:'External partners regularly interfaced with'},
+  {key:'q5',    label:'#1 most important duty & program impact'},
+  {key:'inv1',  label:'Level of involvement — duty #1'},
+  {key:'q7',    label:'#2 most important duty & program impact'},
+  {key:'inv2',  label:'Level of involvement — duty #2'},
+  {key:'q9',    label:'#3 most important duty & program impact'},
+  {key:'inv3',  label:'Level of involvement — duty #3'},
+  {key:'q11',   label:'Hidden aspects of role (not in job description)'},
+  {key:'q12',   label:'Highest level of education'},
+  {key:'q13',   label:'Certifications, licenses, or required training'},
+  {key:'q14',   label:'Knowledge needed to do role well'},
+];
+
+const TEAM_COLORS = {
+  'Programs - Adult Education':'purple',
+  'Programs - Community Services':'coral',
+  'Programs - Homeownership':'teal',
+  'Programs - Organizing & Advocacy':'amber',
+  'Lottery':'blue','FAC Solar':'green',
+  'Fundraising':'blue','Communications':'teal',
+  'Data & Evaluation':'green',
+};
+const STREAM_COLORS = {
+  'Executive':'purple','Management':'blue','Supervisory':'teal',
+  'Project/Program Manager':'amber','Specialist':'green',
+  'Organizational/Property Support':'blue',
+};
+
+/* ── Navigation ────────────────────────────────────────────────── */
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.tab')[['survey','standardize','newrole','generate'].indexOf(id)].classList.add('active');
+  updateMapCounts();
+}
+
+/* ── Survey mode ───────────────────────────────────────────────── */
+function setSurveyMode(mode) {
+  surveyMode = mode;
+  ['upload','manual','none'].forEach(m => {
+    document.getElementById('mode-' + m).style.display = m === mode ? 'block' : 'none';
+    const btn = document.getElementById('mode-' + m + '-btn');
+    btn.classList.toggle('active', m === mode);
+  });
+}
+
+/* ── CSV upload ────────────────────────────────────────────────── */
+function handleDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function handleDragLeave() { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function handleDrop(e) { e.preventDefault(); document.getElementById('drop-zone').classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) parseCSV(f); }
+function handleFileSelect(e) { const f = e.target.files[0]; if (f) parseCSV(f); }
+
+function parseCSV(file) {
+  Papa.parse(file, {
+    header: true, skipEmptyLines: true,
+    complete(results) {
+      csvColumns = results.meta.fields || [];
+      csvRows = results.data;
+      showUploadSuccess(file.name, csvRows.length, csvColumns);
+      buildMappingUI(csvColumns);
+    },
+    error(err) { alert('Could not read CSV: ' + err.message); }
+  });
+}
+
+function showUploadSuccess(name, n, cols) {
+  const el = document.getElementById('upload-success');
+  el.style.display = 'flex';
+  el.innerHTML = `
+    <i class="ti ti-circle-check" style="color:#16a34a;font-size:20px;flex-shrink:0;margin-top:1px"></i>
+    <div>
+      <div class="us-title">${name} — ${n} response${n !== 1 ? 's' : ''} found</div>
+      <div class="us-sub">Columns detected: ${cols.map(c => `<span style="font-family:var(--font-mono);font-size:11px;background:#dcfce7;padding:1px 5px;border-radius:4px;margin:1px;display:inline-block">${c}</span>`).join('')}</div>
+    </div>`;
+}
+
+function buildMappingUI(cols) {
+  document.getElementById('mapping-section').style.display = 'block';
+  const opts = ['<option value="">— skip —</option>', ...cols.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`)].join('');
+  document.getElementById('mapping-rows').innerHTML = SURVEY_QUESTIONS.map(q => {
+    const auto = cols.find(c => autoMatch(c, q.key));
+    const selOpts = auto ? opts.replace(`value="${escHtml(auto)}"`, `value="${escHtml(auto)}" selected`) : opts;
+    return `<div class="mapping-row"><div class="q-lbl">${q.label}</div><select id="map-${q.key}">${selOpts}</select></div>`;
+  }).join('');
+}
+
+function autoMatch(col, key) {
+  const c = col.toLowerCase();
+  const map = {
+    title:  ['title','job title','position','your title'],
+    unit:   ['unit','team','department','programs unit'],
+    q1:     ['last job','previous job','before joining','prior role'],
+    q2:     ['technical skills','tech skills'],
+    q3:     ['interpersonal','behavioral','soft skills'],
+    q4:     ['external partners','partners','stakeholders'],
+    q5:     ['#1','number 1','most important','first duty','duty 1','primary duty'],
+    inv1:   ['involvement.*1','level.*1'],
+    q7:     ['#2','number 2','second duty','duty 2'],
+    inv2:   ['involvement.*2','level.*2'],
+    q9:     ['#3','number 3','third duty','duty 3'],
+    inv3:   ['involvement.*3','level.*3'],
+    q11:    ['hidden','not obvious','should know','stepping'],
+    q12:    ['education','degree','highest level'],
+    q13:    ['certif','licens','training'],
+    q14:    ['knowledge','know to do'],
+  };
+  return (map[key] || []).some(p => { try { return new RegExp(p, 'i').test(c); } catch { return c.includes(p); } });
+}
+
+function applyMapping() {
+  const mapping = {};
+  SURVEY_QUESTIONS.forEach(q => {
+    const s = document.getElementById('map-' + q.key);
+    if (s && s.value) mapping[q.key] = s.value;
+  });
+  const loaded = csvRows
+    .map(row => {
+      const r = {};
+      SURVEY_QUESTIONS.forEach(q => { r[q.key] = mapping[q.key] ? (row[mapping[q.key]] || '') : ''; });
+      return r;
+    })
+    .filter(r => r.title || r.unit || r.q5);
+  if (!loaded.length) { alert('No responses could be loaded — check your column mapping.'); return; }
+  surveyResponses = [...surveyResponses, ...loaded];
+  renderLoadedResponses();
+  document.getElementById('mapping-section').style.display = 'none';
+  updateMapCounts();
+}
+
+/* ── Manual survey entry ───────────────────────────────────────── */
+function getInv(id) {
+  return Array.from(document.querySelectorAll('#' + id + ' input:checked')).map(c => c.value).join(', ');
+}
+function addManualResponse() {
+  const unit = document.getElementById('sv-unit').value;
+  const title = document.getElementById('sv-title').value.trim();
+  if (!title && !unit) { alert("Enter at least the staff member's title or unit."); return; }
+  surveyResponses.push({
+    unit, title,
+    q1: v('sv-q1'), q2: v('sv-q2'), q3: v('sv-q3'), q4: v('sv-q4'),
+    q5: v('sv-q5'), inv1: getInv('inv1'),
+    q7: v('sv-q7'), inv2: getInv('inv2'),
+    q9: v('sv-q9'), inv3: getInv('inv3'),
+    q11: v('sv-q11'), q12: document.getElementById('sv-q12').value,
+    q13: v('sv-q13'), q14: v('sv-q14'),
+  });
+  renderLoadedResponses();
+  ['sv-q1','sv-q2','sv-q3','sv-q4','sv-q5','sv-q7','sv-q9','sv-q11','sv-q13','sv-q14','sv-title'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sv-unit').value = '';
+  document.getElementById('sv-q12').value = '';
+  document.querySelectorAll('.inv-grid input').forEach(c => c.checked = false);
+  updateMapCounts();
+}
+
+/* ── Render responses ──────────────────────────────────────────── */
+function renderLoadedResponses() {
+  const wrap = document.getElementById('loaded-responses');
+  const list = document.getElementById('responses-list');
+  const cnt  = document.getElementById('survey-count');
+  wrap.style.display = surveyResponses.length ? 'block' : 'none';
+  if (cnt) cnt.textContent = surveyResponses.length + ' response' + (surveyResponses.length !== 1 ? 's' : '') + ' loaded';
+  list.innerHTML = surveyResponses.map((r, i) => {
+    const color = TEAM_COLORS[r.unit] || 'blue';
+    const duties = [r.q5, r.q7, r.q9].filter(Boolean);
+    return `<div class="resp-card">
+      <div class="resp-card-title">
+        <span><span class="badge badge-${color}" style="margin-right:6px">${escHtml(r.unit||'Unknown')}</span>${escHtml(r.title||'Untitled')}</span>
+        <span class="chip-remove" onclick="removeSurvey(${i})">×</span>
+      </div>
+      ${duties.length ? `<div class="resp-card-duties">${duties.map(d => `<span class="duty-chip">${escHtml(d.substring(0,45))}${d.length>45?'…':''}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function removeSurvey(i) { surveyResponses.splice(i, 1); renderLoadedResponses(); updateMapCounts(); }
+function clearResponses() {
+  if (confirm('Clear all ' + surveyResponses.length + ' loaded responses?')) {
+    surveyResponses = []; renderLoadedResponses(); updateMapCounts();
+  }
+}
+
+/* ── Roles batch ───────────────────────────────────────────────── */
+function addRole() {
+  const title = v('std-title'), jd = v('std-jd');
+  if (!title && !jd) { alert('Add a title or description first.'); return; }
+  roles.push({ title: title || 'Untitled', jd, stream: document.getElementById('std-stream').value, dept: document.getElementById('std-dept').value });
+  renderRoles();
+  document.getElementById('std-title').value = '';
+  document.getElementById('std-jd').value = '';
+}
+function removeRole(i) { roles.splice(i, 1); renderRoles(); }
+function renderRoles() {
+  document.getElementById('role-count').textContent = roles.length + ' role' + (roles.length !== 1 ? 's' : '') + ' added';
+  const area = document.getElementById('roles-area');
+  area.innerHTML = roles.length
+    ? roles.map((r, i) => `<span class="chip"><span class="badge badge-${STREAM_COLORS[r.stream]||'blue'}" style="font-size:10px">${escHtml(r.stream||'?')}</span>${escHtml(r.title)}<span class="chip-remove" onclick="removeRole(${i})">×</span></span>`).join('')
+    : '<span style="font-size:12px;color:var(--color-text-secondary)">Added roles appear here…</span>';
+  updateMapCounts();
+}
+
+function updateMapCounts() {
+  const sc = document.getElementById('map-survey-count');
+  const rc = document.getElementById('map-role-count');
+  if (sc) sc.textContent = surveyResponses.length;
+  if (rc) rc.textContent = roles.length;
+}
+
+/* ── Format survey data for prompts ────────────────────────────── */
+function fmtSurvey(responses) {
+  return responses.map((r, i) => `RESPONDENT ${i+1}: ${r.title||'Unknown'} (${r.unit||'Unknown team'})
+- Last job before joining: ${r.q1||'N/A'}
+- Education: ${r.q12||'N/A'}
+- Certifications: ${r.q13||'N/A'}
+- Technical skills: ${r.q2||'N/A'}
+- Interpersonal/behavioral skills: ${r.q3||'N/A'}
+- Knowledge needed: ${r.q14||'N/A'}
+- External partners: ${r.q4||'N/A'}
+- Duty #1: ${r.q5||'N/A'} [Involvement: ${r.inv1||'N/A'}]
+- Duty #2: ${r.q7||'N/A'} [Involvement: ${r.inv2||'N/A'}]
+- Duty #3: ${r.q9||'N/A'} [Involvement: ${r.inv3||'N/A'}]
+- Hidden aspects: ${r.q11||'N/A'}`).join('\n\n');
+}
+
+/* ── Claude API call ────────────────────────────────────────────── */
+async function callClaude(prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = await res.json();
+  return data.content?.map(b => b.text || '').join('') || 'No response.';
+}
+
+function loading(el) {
+  el.innerHTML = '<div class="loading">Generating <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>';
+}
+
+/* ── Standardize ────────────────────────────────────────────────── */
+async function runStandardize() {
+  if (!roles.length) { alert('Add at least one role first.'); return; }
+  const opts = [];
+  if (document.getElementById('opt-align').checked) opts.push("align each role to FAC/NHN's Job Architecture career stream");
+  if (document.getElementById('opt-resp').checked)  opts.push('standardize responsibilities so language is consistent and each level builds on the previous');
+  if (document.getElementById('opt-qual').checked)  opts.push('standardize qualifications (education, experience, certifications) aligned to the framework');
+  const rolesText = roles.map(r => `ROLE: ${r.title}\nStream: ${r.stream||'Unknown'}\nTeam: ${r.dept||'Unknown'}\nDescription:\n${r.jd}`).join('\n\n---\n\n');
+  const prompt = `You are an HR expert for a NYC nonprofit housing organization (FAC, BWI, NHN).
+
+ORG FRAMEWORK:
+${ORG_FRAMEWORK}
+
+TASK: Standardize the following ${roles.length} role(s): ${opts.join('; ')}.
+
+For each role output:
+1. Standardized title
+2. Career stream & ladder rung (Entry / Mid / Senior / Lead / Manager)
+3. Scope & responsibilities (3–4 bullets, consistent language)
+4. Qualifications (education, experience, certifications)
+5. Reports to
+
+After all roles: show a text-based career ladder and flag any missing rungs.
+
+ROLES:
+${rolesText}`;
+  document.getElementById('std-output').style.display = 'block';
+  const el = document.getElementById('std-result');
+  loading(el);
+  try { el.textContent = await callClaude(prompt); }
+  catch(e) { el.textContent = 'Error: ' + e.message; }
+}
+
+/* ── Draft new role ─────────────────────────────────────────────── */
+async function runNewRole() {
+  const purpose = v('new-purpose'), title = v('new-title');
+  if (!purpose && !title) { alert('Describe the role or the gap it fills.'); return; }
+  const prompt = `You are an HR expert for a NYC nonprofit housing organization (FAC, BWI, NHN).
+
+ORG FRAMEWORK:
+${ORG_FRAMEWORK}
+
+TASK: Write a complete job description for a new role.
+
+Parameters:
+- Team: ${document.getElementById('new-dept').value||'N/A'}
+- Career stream: ${document.getElementById('new-stream').value||'N/A'}
+- Proposed title: ${title||'TBD'}
+- Gap/purpose: ${purpose}
+- Role below it: ${v('role-below')||'N/A'}
+- Role above it: ${v('role-above')||'N/A'}
+
+Include: title, career stream & reporting structure, position summary (2–3 sentences), FLSA status, key responsibilities (6–8 bullets) anchored to the responsibilities of adjacent roles, core competencies (5 bullets) that build logically on the level below, qualifications (education & experience). Close with a brief note on how this role fits into the team's progression framework and who could move into it.`;
+  document.getElementById('newrole-output').style.display = 'block';
+  const el = document.getElementById('newrole-result');
+  loading(el);
+  try { el.textContent = await callClaude(prompt); }
+  catch(e) { el.textContent = 'Error: ' + e.message; }
+}
+
+/* ── Generate ───────────────────────────────────────────────────── */
+async function runGenerate() {
+  const wantJDs  = document.getElementById('out-jds').checked;
+  const wantCPF  = document.getElementById('out-cpf').checked;
+  const wantOrg  = document.getElementById('out-org').checked;
+  if (!wantJDs && !wantCPF && !wantOrg) { alert('Select at least one output.'); return; }
+
+  const dept = v('map-dept');
+  const rolesSection   = roles.length ? '\nJOB DESCRIPTIONS:\n' + roles.map(r => `${r.title} (${r.stream}, ${r.dept}):\n${r.jd}`).join('\n\n') : '';
+  const surveySection  = surveyResponses.length ? '\nSTAFF SURVEY RESPONSES:\n' + fmtSurvey(surveyResponses) : '';
+  const noSurveyNote   = surveyMode === 'none' ? '\nNote: No survey data was collected for this team. Generate outputs from job descriptions and the org framework only.' : '';
+  const base = `You are an HR and OD expert for NYC nonprofit FAC/BWI/NHN.\n\nORG FRAMEWORK:\n${ORG_FRAMEWORK}\n\nTEAM: ${dept||'this team'}${rolesSection}${surveySection}${noSurveyNote}`;
+
+  document.getElementById('gen-output').style.display = 'block';
+  document.getElementById('gen-jds-section').style.display = wantJDs ? 'block' : 'none';
+  document.getElementById('gen-cpf-section').style.display = wantCPF ? 'block' : 'none';
+  document.getElementById('gen-org-section').style.display = wantOrg ? 'block' : 'none';
+
+  if (wantJDs) {
+    const el = document.getElementById('gen-jds-result'); loading(el);
+    try { el.textContent = await callClaude(base + '\n\nTASK: Write complete, standardized job descriptions for ALL roles in this team\'s progression framework — both existing and any new/aspirational roles. For each include: title, career stream, reporting structure, position summary, FLSA status, key responsibilities (6–8 bullets), core competencies (5 bullets), and qualifications. Organize entry-level to most senior. Flag aspirational/unfilled roles clearly.'); }
+    catch(e) { el.textContent = 'Error: ' + e.message; }
+  }
+  if (wantCPF) {
+    const el = document.getElementById('gen-cpf-result'); loading(el);
+    try { el.textContent = await callClaude(base + '\n\nTASK: Create a career progression framework for this team modeled on the FAC Organizing & Advocacy Career Progression Map.\n\nFor each role populate ALL of these dimensions:\n- Title\n- Status/Hours\n- Previous Roles / Career Path (use Q1 survey data)\n- Program Impact\n- Technical & Content Expertise (use Q2 + Q14)\n- Behavioral/Soft Skills (use Q3)\n- Education & Experience (use Q12 + Q13)\n- Key Responsibilities (use Q5, Q7, Q9)\n- Level of Involvement: Assists/Supports → Performs Directly → Coordinates → Oversees → Accountable for All (use Q6/Q8/Q10)\n- Reports To\n\nGroup into parallel tracks if applicable. Flag aspirational roles. End with 3–5 recommendations for strengthening the ladder.'); }
+    catch(e) { el.textContent = 'Error: ' + e.message; }
+  }
+  if (wantOrg) {
+    const el = document.getElementById('gen-org-result'); loading(el);
+    try { el.textContent = await callClaude(base + '\n\nTASK: Create a text-based org chart for this team showing the full reporting structure across all roles, including new or aspirational positions. Use indentation and hierarchy indicators (└─, ├─). Label aspirational/unfilled roles [NEW] or [ASPIRATIONAL]. Include a brief legend.'); }
+    catch(e) { el.textContent = 'Error: ' + e.message; }
+  }
+}
+
+/* ── Helpers ────────────────────────────────────────────────────── */
+function toggleCheck(id) { document.getElementById(id).checked = !document.getElementById(id).checked; }
+function v(id) { return document.getElementById(id).value.trim(); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function copyOut(id) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent)
+    .then(() => alert('Copied to clipboard!'))
+    .catch(() => alert('Copy failed — please select and copy manually.'));
+}
+// sendToChat is a no-op in the standalone version — outputs are already on-screen
+function sendToChat(msg) { alert('Tip: ' + msg); }
+</script>
+</body>
+</html>
